@@ -22,6 +22,7 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
+__pycache__/
 .installed.cfg
 *.egg
 MANIFEST
@@ -74,6 +75,7 @@ docs/_build/
 # PyBuilder
 .pybuilder/
 target/
+.pyc
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -205,3 +207,4 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+config.json

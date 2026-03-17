@@ -1,0 +1,20 @@
+{
+  "_comment": "This is an example config file showing what will be stored after login",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "expires_at": 1710612345,
+  "cookies": {
+    "PHPSESSID": "abc123...",
+    "server_name_session": "xyz789..."
+  },
+  "headers": {
+    "X-CSRF-Token": "token_here"
+  },
+  "user_info": {
+    "email": "king.wzrd@student.telkomuniversity.ac.id",
+    "name": "Wzrd",
+    "nim": "123456789"
+  }
+}
