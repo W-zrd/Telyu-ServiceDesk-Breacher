@@ -25,11 +25,6 @@ A tool to satisfy your frustation that can be used for viewing ticket belonging 
 - Chrome, Firefox, or Edge browser
 - Linux or Windows (Tested on Linux)
 
-### Python Dependencies
-```bash
-pip3 install -r requirements.txt
-```
-
 **Required packages:**
 - `click` - CLI framework
 - `requests` - HTTP client
@@ -64,7 +59,7 @@ chmod +x cli.py
 
 ### 1. Login (First Time)
 
-Run the automated login:
+Run the login first:
 ```bash
 ./cli.py login
 ```
@@ -81,65 +76,71 @@ Run the automated login:
 5. Browser closes
 6. Session saved to `config.json`
 
-**Browser Selection:**
+**Browser Selection (optional):**
 ```bash
-./cli.py login --browser chrome
+./cli.py login --browser chrome # default
 ./cli.py login --browser firefox
-./cli.py login --browser auto # Default, the same as using ./cli.py login
+./cli.py login --browser auto
 ```
 
-### 2. Check Authentication Status
+### 2. View All Tickets
+
+The simplest way to use the tool is fetch ALL tickets for a user:
 
 ```bash
-./cli.py status
+./cli.py tickets --username {sso_username}
 ```
 
-Shows whether you're authenticated, token info, and expiry time.
-
-### 3. View My Tickets
-
-Retrieve tickets from "My Tickets" endpoint:
-
-```bash
-./cli.py my-tickets --username {sso_username}
-```
-
-**Options:**
-- `--username`: Tel-U SSO username to query (required)
-- `--format`: Output format (`pretty` or `json`)
+**What it does:**
+- Fetches all ticket list from a given username
+- Sorts by creation time (newest first)
+- Shows status label for each ticket
 
 **Examples:**
 ```bash
-./cli.py my-tickets --username king.wzrd
-./cli.py my-tickets --username king.wzrd --format json
+./cli.py tickets --username king.wzrd
+./cli.py tickets --username king.wzrd --format detail
+./cli.py tickets --username king.wzrd --format json
 ```
 
-### 4. View Closed Tickets
+### 3. Filter by Specific Status
 
-Retrieve closed tickets with full details:
+If you only want tickets with a specific status:
 
 ```bash
-./cli.py closed-tickets --username king.wzrd
+./cli.py tickets --username {sso_username} --status {status_name}
 ```
 
+**Available Statuses:**
+
+
+| status_name    | Code | Description              |
+|---------------|------|--------------------------|
+| new           | 1    | New ticket               |
+| assigned      | 2    | Assigned ticket          |
+| in-progress   | 3    | In progress ticket       |
+| resolve       | 4    | Resolved ticket          |
+| closed        | 5    | Closed ticket            |
+| on-hold       | 6    | On hold ticket           |
+| confirmation  | 8    | Confirmation ticket      |
+
 **Options:**
-- `--username`: Tel-U username to query (required)
-- `--page`: Page number (default: 1)
+- `--username`: Tel-U SSO username to query (required)
+- `--status`: Ticket status filter (optional, fetches all if omitted)
+- `--page`: Page number (only used with --status)
 - `--format`: Output format (`list`, `detail`, or `json`)
 
 **Examples:**
 ```bash
-./cli.py closed-tickets --username king.wzrd
-./cli.py closed-tickets --username king.wzrd --format detail
-./cli.py closed-tickets --username king.wzrd --page 2
-./cli.py closed-tickets --username king.wzrd --format json
+./cli.py tickets --username king.wzrd --status new
+./cli.py tickets --username king.wzrd --status in-progress --page 2
+./cli.py tickets --username king.wzrd --status closed --format detail
 ```
 
 **Output Formats:**
-- `list`: Summary view with ticket IDs, status, and short description
+- `list`: Summary view with ticket IDs, status, and short description (default)
 - `detail`: Full ticket details including tasks, assignees, attachments
 - `json`: Raw JSON response
-
 
 ## Configuration
 
@@ -162,34 +163,36 @@ After successful login, session data is stored in `config.json`:
 
 ## Output Examples
 
-### List Format
+### List Format (All Tickets)
 
 ```
-
 ================================================================================
-Total: 2 ticket(s)
+Total: 15 ticket(s)
 ================================================================================
 
-#24340   Close        Medium     Information    
-         2025-11-04 23:05:47
-         Dear IT Service Desk PuTI, saya memerlukan bantuan untuk reset password SSO ...
+#24567     [NEW] New                      High      
+           2026-03-18 14:30:00
+           Request for new VPN access for remote work
 
-#24043   Close        Medium     Information    
-         2025-10-14 11:20:30
-         Halo, butuh bantuan untuk setup Exam browser agar bisa mengerjakan UAS Alpro ...
+#24556     [IN-PROGRESS] In Progress      Medium    
+           2026-03-18 10:15:00
+           Software installation request - Microsoft Office
 
-Page 1 of 1 | Total: 2 records
+#24340     [CLOSED] Close                 Medium    
+           2025-11-04 23:05:47
+           Dear IT Service Desk PuTI, saya memerlukan bantuan untuk reset password SSO...
+
+Total: 15 tickets across all statuses
 ```
 
 ### Detail Format
 ```
-> ./cli.py closed-tickets --format detail
 ================================================================================
 Ticket #24340
 ================================================================================
 
 📋 Basic Info:
-  Status       : Close
+  Status       : Close (closed)
   Priority     : Medium
   Classification: Minor
   Purpose      : Information
@@ -222,12 +225,6 @@ Ticket #24340
   1. Permintaan reset password SSO oleh username victim_user..
      Created: 2025-11-05 08:33:16 by admin_puti1
      Assignees: 2 (2 done)
-  2. [Extend] Permintaan reset password SSO oleh username victim_user
-     Created: 2025-11-10 09:04:53 by admin_puti2
-     Assignees: 2 (2 done)
-  3. Reset password sudah berhasil dilakukan oleh victim_user.
-     Created: 2025-11-14 11:11:54 by admin_puti3
-     Assignees: 2 (2 done)
 
 🏷️  Keywords:
   reset password sso
@@ -241,7 +238,6 @@ Ticket #24340
 ### "Not authenticated"
 Run login first:
 ```bash
-./cli.py status
 ./cli.py login
 ```
 
@@ -256,23 +252,53 @@ Tokens expire after ~24 hours. Re-authenticate:
 pip3 install selenium webdriver-manager
 ```
 
-### "No browser found"
-Install one of the supported browsers:
-- Chrome: https://www.google.com/chrome/
-- Firefox: https://www.mozilla.org/firefox/
-- Edge: https://www.microsoft.com/edge
+## Usage Patterns
+
+### Quick User Audit
+Get all tickets for a user to see their full history:
+```bash
+./cli.py tickets --username king.wzrd
+```
+
+### Check Active Work
+Filter only in-progress tickets:
+```bash
+./cli.py tickets --username king.wzrd --status in-progress
+```
+
+### Export for Analysis
+Get all tickets in JSON format:
+```bash
+./cli.py tickets --username king.wzrd --format json > king_wzrd_tickets.json
+```
+
+### Detailed Investigation
+View full details of all tickets:
+```bash
+./cli.py tickets --username king.wzrd --format detail
+```
 
 ## Project Structure
 
 ```
-telu-cli-v2/
-├── cli.py              # Main CLI interface
-├── auth.py             # Authentication & token management
-├── api.py              # Service Desk API wrapper
-├── formatter.py        # Output formatting utilities
-├── browser_login.py    # Automated browser login
-├── requirements.txt    # Python dependencies
-├── setup.sh            # Quick setup script
-├── config.json         # Session data (created after login)
-└── README.md           # This file
+Telyu-CLI/
+├── cli.py                    # CLI entry point
+├── telyu_cli/                # Source code package
+│   ├── __init__.py
+│   ├── api.py                # Service Desk API wrapper
+│   ├── auth.py               # Authentication & token management
+│   ├── formatter.py          # Output formatting utilities
+│   └── browser_login.py      # Automated browser login
+├── docs/                     # Documentation
+│   └── CHANGELOG.md
+├── img/                      # Images
+│   ├── cover.jpeg
+│   └── overview.png
+├── config.json               # Session data (created after login)
+├── config.json.example       # Example configuration
+├── requirements.txt          # Python dependencies
+├── setup.sh                  # Quick setup script
+├── LICENSE
+├── .gitignore
+└── README.md                 # This file
 ```

@@ -193,14 +193,12 @@ def extract_bearer_token(driver):
     
     try:
         current_url = driver.current_url
-        print(f"  Current page: {current_url}")
         
         if 'satu.telkomuniversity.ac.id' not in current_url:
             print("  ⚠️  Not on SATU page, navigating...")
             driver.get('https://satu.telkomuniversity.ac.id/home')
             time.sleep(3)
         
-        print("  Checking localStorage...")
         local_storage = driver.execute_script("""
             const storage = {};
             for (let i = 0; i < localStorage.length; i++) {
@@ -258,7 +256,6 @@ def extract_bearer_token(driver):
         
         if bearer_token:
             print(f"\n  🎯 Bearer token found!")
-            print(f"     Source: {token_key}")
             print(f"     Preview: {bearer_token[:40]}...{bearer_token[-20:]}")
             return bearer_token
         else:
@@ -313,11 +310,6 @@ def save_session(bearer_token, cookies):
     print(f"\n✅ Session saved to: {config_file.absolute()}")
     print(f"📅 Estimated expiry: {config['expires_estimate']}")
     
-    print(f"\n📊 Session Summary:")
-    print(f"   Bearer token: ✅ Yes ({len(bearer_token)} chars)")
-    print(f"   Cookies: {len(cookies)}")
-    print(f"   Preview: {bearer_token[:30]}...{bearer_token[-15:]}")
-    
     return config_file
 
 def automated_login(browser='auto', headless=False):
@@ -361,9 +353,9 @@ def automated_login(browser='auto', headless=False):
             print("✅ SUCCESS! Token extracted and saved")
             print("="*60)
             print("\nYou can now use:")
-            print("  ./cli.py status")
-            print("  ./cli.py my-tickets --username {your_username}")
-            print("  ./cli.py closed-tickets --username {your_username}")
+            print("  ./cli.py tickets --username {target_sso_username}")
+            print("  ./cli.py tickets --username {target_sso_username} --status new")
+            print("  ./cli.py tickets --username {target_sso_username} --format detail")
             print("="*60)
             return True
         else:

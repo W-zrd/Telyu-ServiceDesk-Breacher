@@ -19,7 +19,7 @@ echo ""
 echo "Installing dependencies..."
 pip3 install -r requirements.txt --quiet
 
-chmod +x cli.py browser_login.py
+chmod +x cli.py telyu_cli/browser_login.py
 
 echo ""
 read -p "Create symlink to /usr/local/bin/telu-cli? (y/n) " -n 1 -r
@@ -44,8 +44,9 @@ echo ""
 echo "2. Complete Microsoft SSO + OTP in the browser"
 echo ""
 echo "3. Use the CLI:"
-echo "   $ ./cli.py closed-tickets --username {igracias_username}"
-echo "   $ ./cli.py my-tickets --username {igracias_username}"
+echo "   $ ./cli.py tickets --username {username}"
+echo "   $ ./cli.py tickets --username {username} --status new"
+echo "   $ ./cli.py tickets --username {username} --status in-progress"
 echo ""
 echo "See README.md for full documentation"
 echo ""
