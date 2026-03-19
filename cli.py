@@ -24,41 +24,69 @@ def cli():
 
 @cli.command()
 @click.option('--browser', type=click.Choice(['auto', 'chrome', 'firefox', 'edge']), default='auto')
-def login(browser):
-    click.echo(f"{Fore.CYAN}🚀 Automated browser login{Style.RESET_ALL}")
-    click.echo()
-    click.echo("This will:")
-    if browser == 'auto':
-        click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Auto-detect available browser")
+@click.option('--manual', is_flag=True, help='Enter bearer token manually')
+def login(browser, manual):
+    if manual:
+        click.echo(f"{Fore.CYAN}🔑 Manual bearer token entry{Style.RESET_ALL}")
+        click.echo()
+        click.echo(f"{Fore.YELLOW}Note: Paste your bearer token below{Style.RESET_ALL}")
+        click.echo(f"{Fore.YELLOW}The token should be a long string from localStorage or network requests{Style.RESET_ALL}")
+        click.echo()
+        
+        bearer_token = click.prompt('Bearer token', type=str, hide_input=True)
+        
+        if not bearer_token or len(bearer_token) < 20:
+            click.echo(f"{Fore.RED}✗ Invalid token (too short){Style.RESET_ALL}")
+            raise click.Abort()
+        
+        auth = TelUAuth()
+        
+        try:
+            auth.set_manual_token(bearer_token)
+            click.echo()
+            click.echo(f"{Fore.GREEN}✅ Token saved successfully!{Style.RESET_ALL}")
+            click.echo(f"  {Fore.GREEN}Method:{Style.RESET_ALL} Manual entry")
+            click.echo(f"  {Fore.GREEN}Saved to:{Style.RESET_ALL} config.json")
+            click.echo()
+            click.echo(f"Run: {Fore.CYAN}./cli.py tickets --username {{username}}{Style.RESET_ALL} to test")
+        except Exception as e:
+            click.echo(f"{Fore.RED}✗ Error saving token: {e}{Style.RESET_ALL}")
+            raise click.Abort()
     else:
-        click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Use {browser.title()}")
-    click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Open SATU login page")
-    click.echo(f"  {Fore.YELLOW}⏸{Style.RESET_ALL}  Wait for you to complete SSO + OTP")
-    click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Extract bearer token from SATU dashboard")
-    click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Save to config.json")
-    click.echo()
-    
-    try:
-        import subprocess
-        import sys
-        
-        result = subprocess.run(
-            [sys.executable, 'telyu_cli/browser_login.py', '--browser', browser],
-            cwd='.'
-        )
-        
-        if result.returncode == 0:
-            click.echo()
-            click.echo(f"{Fore.GREEN}✅ Login successful!{Style.RESET_ALL}")
-            click.echo(f"\nRun: {Fore.CYAN}./cli.py tickets --username {{username}}{Style.RESET_ALL} to get started")
+        click.echo(f"{Fore.CYAN}🚀 Automated browser login{Style.RESET_ALL}")
+        click.echo()
+        click.echo("This will:")
+        if browser == 'auto':
+            click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Auto-detect available browser")
         else:
-            click.echo()
-            click.echo(f"{Fore.RED}✗ Login failed{Style.RESET_ALL}")
+            click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Use {browser.title()}")
+        click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Open SATU login page")
+        click.echo(f"  {Fore.YELLOW}⏸{Style.RESET_ALL}  Wait for you to complete SSO + OTP")
+        click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Extract bearer token from SATU dashboard")
+        click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Save to config.json")
+        click.echo()
+        
+        try:
+            import subprocess
+            import sys
             
-    except FileNotFoundError:
-        click.echo(f"{Fore.RED}✗ telyu_cli/browser_login.py not found{Style.RESET_ALL}")
-    except Exception as e:
-        click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
+            result = subprocess.run(
+                [sys.executable, 'telyu_cli/browser_login.py', '--browser', browser],
+                cwd='.'
+            )
+            
+            if result.returncode == 0:
+                click.echo()
+                click.echo(f"{Fore.GREEN}✅ Login successful!{Style.RESET_ALL}")
+                click.echo(f"\nRun: {Fore.CYAN}./cli.py tickets --username {{username}}{Style.RESET_ALL} to get started")
+            else:
+                click.echo()
+                click.echo(f"{Fore.RED}✗ Login failed{Style.RESET_ALL}")
+                
+        except FileNotFoundError:
+            click.echo(f"{Fore.RED}✗ telyu_cli/browser_login.py not found{Style.RESET_ALL}")
+        except Exception as e:
+            click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
 
 @cli.command()
 @click.option('--username', prompt='Enter username', help='Tel-U username')

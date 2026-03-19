@@ -27,14 +27,7 @@ As long as you know the target username, you can use this tool for viewing helpd
 
 - Python 3.7+
 - Chrome
-- Worked perfectly on Linux
-
-**Required packages:**
-- `click` - CLI framework
-- `requests` - HTTP client
-- `colorama` - Colored terminal output
-- `selenium` - Browser automation
-- `webdriver-manager` - Automatic driver management
+- Works perfectly on Linux
 
 ## Installation
 
@@ -85,10 +78,10 @@ You must login with your Microsoft SSO Student first to get Auth Token.
 5. Browser closes
 6. Session saved to `config.json`
 
-**Browser Selection (optional):**
+You can also try the manual version assuming that you already have the Bearer Token from browser local storage:
+
 ```bash
-./cli.py login --browser chrome # default
-./cli.py login --browser firefox
+./cli.py login --manual
 ```
 
 ### 2. View All Tickets belonging to Other User
@@ -99,7 +92,7 @@ You must login with your Microsoft SSO Student first to get Auth Token.
 ./cli.py tickets --username {sso_username}
 ```
 
-Or if you want more detailed output:
+Replace `sso_username` to your target victim username. Or if you want more detailed output:
 
 ```bash
 ./cli.py tickets --username {sso_username} --format detail

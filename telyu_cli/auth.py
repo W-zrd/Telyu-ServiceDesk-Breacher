@@ -53,3 +53,20 @@ class TelUAuth:
             headers['Authorization'] = f"Bearer {token}"
         
         return headers
+    
+    def set_manual_token(self, bearer_token):
+        from datetime import datetime, timedelta
+        
+        self.token_data = {
+            "access_token": bearer_token,
+            "headers": {
+                "Authorization": f"Bearer {bearer_token}"
+            },
+            "cookies": {},
+            "extracted_at": datetime.now().isoformat(),
+            "expires_estimate": (datetime.now() + timedelta(hours=24)).isoformat(),
+            "method": "manual_entry"
+        }
+        
+        self.save_config()
+        return True
