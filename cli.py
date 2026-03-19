@@ -140,5 +140,63 @@ def tickets(username, status_name, page, output_format):
         except Exception as e:
             click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
 
+@cli.command()
+@click.option('--username', prompt='Target username', help='Username to create ticket as (e.g., king.wzrd)')
+@click.option('--user-id', default=None, help='User ID (optional, e.g., 1302210127)')
+@click.option('--description', prompt='Ticket description', help='Description of the issue/request')
+@click.option('--service-id', default=1213, help='Service detail ID (default: 1213)')
+def create_ticket(username, user_id, description, service_id):
+    auth = TelUAuth()
+    if not auth.is_authenticated():
+        click.echo(f"{Fore.RED}✗ Not authenticated. Run: ./cli.py login{Style.RESET_ALL}")
+        raise click.Abort()
+    
+    api = TelUServiceDesk(auth)
+    
+    click.echo()
+    click.echo(f"{Fore.CYAN}📝 Ticket Preview:{Style.RESET_ALL}")
+    click.echo(f"  {Fore.GREEN}Username:{Style.RESET_ALL} {username}")
+    if user_id:
+        click.echo(f"  {Fore.GREEN}User ID:{Style.RESET_ALL} {user_id}")
+    click.echo(f"  {Fore.GREEN}Service ID:{Style.RESET_ALL} {service_id}")
+    click.echo(f"  {Fore.GREEN}Description:{Style.RESET_ALL}")
+    
+    preview_desc = description if description.strip().startswith('<p>') else f"<p>{description}</p>"
+    click.echo(f"    {preview_desc}")
+    click.echo()
+    
+    click.echo(f"{Fore.YELLOW}⚠️  WARNING: This will create a REAL ticket in Service Desk!{Style.RESET_ALL}")
+    if not click.confirm(f"{Fore.RED}Are you sure you want to create this ticket as that specified user?{Style.RESET_ALL}", default=False):
+        click.echo(f"{Fore.YELLOW}✗ Cancelled{Style.RESET_ALL}")
+        return
+    
+    try:
+        click.echo()
+        click.echo(f"{Fore.CYAN}📤 Creating ticket...{Style.RESET_ALL}")
+        
+        result = api.create_ticket(
+            username=username,
+            description=description,
+            user_id=user_id,
+            service_detail_id=service_id
+        )
+        
+        click.echo()
+        click.echo(f"{Fore.GREEN}✅ Ticket created successfully!{Style.RESET_ALL}")
+        click.echo()
+        click.echo(f"  {Fore.GREEN}Ticket ID:{Style.RESET_ALL} {result.get('id', 'N/A')}")
+        click.echo(f"  {Fore.GREEN}Status:{Style.RESET_ALL} {result.get('status', 'N/A')}")
+        click.echo(f"  {Fore.GREEN}Message:{Style.RESET_ALL} {result.get('message', 'N/A')}")
+        click.echo()
+        
+    except AuthenticationError as e:
+        click.echo(f"{Fore.RED}✗ {e}{Style.RESET_ALL}")
+        raise click.Abort()
+    except Exception as e:
+        click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
+        import traceback
+        traceback.print_exc()
+        raise click.Abort()
+
 if __name__ == '__main__':
     cli()
