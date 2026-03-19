@@ -168,22 +168,28 @@ def wait_for_login(driver, timeout=300):
     last_url = ""
     
     while time.time() - start_time < timeout:
-        current_url = driver.current_url
-        
-        if current_url != last_url:
-            print(f"\n  📍 {current_url[:80]}...")
-            last_url = current_url
-        
-        if 'satu.telkomuniversity.ac.id/home' in current_url:
-            print("\n✅ SATU dashboard detected!")
-            time.sleep(3)
-            return True
-        
-        elapsed = int(time.time() - start_time)
-        if elapsed % 10 == 0 and elapsed > 0:
-            print(f"  ⏳ {elapsed}s / {timeout}s", end='\r')
-        
-        time.sleep(1)
+        try:
+            current_url = driver.current_url
+            
+            if current_url != last_url:
+                print(f"\n  📍 {current_url[:80]}...")
+                last_url = current_url
+            
+            if 'satu.telkomuniversity.ac.id/home' in current_url:
+                print("\n✅ SATU dashboard detected!")
+                time.sleep(3)
+                return True
+            
+            elapsed = int(time.time() - start_time)
+            if elapsed % 10 == 0 and elapsed > 0:
+                print(f"  ⏳ {elapsed}s / {timeout}s", end='\r')
+            
+            time.sleep(1)
+            
+        except Exception as e:
+            # Browser was closed or connection lost
+            print(f"\n❌ Browser closed or connection lost: {e}")
+            return False
     
     print("\n❌ Timeout - login not completed")
     return False
@@ -399,6 +405,7 @@ def check_requirements():
 
 if __name__ == '__main__':
     import argparse
+    import sys
     
     parser = argparse.ArgumentParser(description='Automated browser login for Tel-U')
     parser.add_argument('--browser', choices=['auto', 'chrome', 'firefox', 'edge'], default='auto')
@@ -406,5 +413,10 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    if check_requirements():
-        automated_login(browser=args.browser, headless=args.headless)
+    if not check_requirements():
+        sys.exit(1)
+    
+    success = automated_login(browser=args.browser, headless=args.headless)
+    
+    # Exit with proper code: 0 for success, 1 for failure
+    sys.exit(0 if success else 1)

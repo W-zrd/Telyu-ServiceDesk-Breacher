@@ -4,6 +4,7 @@ import click
 import json
 from colorama import Fore, Style, init as colorama_init
 from telyu_cli import TelUAuth, TelUServiceDesk, format_ticket_summary, format_ticket_list, format_pagination_info
+from telyu_cli.api import AuthenticationError
 
 colorama_init(autoreset=True)
 
@@ -36,9 +37,6 @@ def login(browser):
     click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Extract bearer token from SATU dashboard")
     click.echo(f"  {Fore.GREEN}✓{Style.RESET_ALL} Save to config.json")
     click.echo()
-    
-    if not click.confirm("Continue?", default=True):
-        return
     
     try:
         import subprocess
@@ -109,6 +107,9 @@ def tickets(username, status_name, page, output_format):
                 else:
                     click.echo(f"{Fore.YELLOW}No tickets found.{Style.RESET_ALL}")
                 
+        except AuthenticationError as e:
+            click.echo(f"{Fore.RED}✗ {e}{Style.RESET_ALL}")
+            raise click.Abort()
         except Exception as e:
             click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
     else:
@@ -133,6 +134,9 @@ def tickets(username, status_name, page, output_format):
                 else:
                     click.echo(f"{Fore.YELLOW}No tickets found.{Style.RESET_ALL}")
                 
+        except AuthenticationError as e:
+            click.echo(f"{Fore.RED}✗ {e}{Style.RESET_ALL}")
+            raise click.Abort()
         except Exception as e:
             click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
 

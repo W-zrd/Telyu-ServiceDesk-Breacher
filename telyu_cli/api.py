@@ -1,6 +1,10 @@
 import requests
 from .auth import TelUAuth
 
+class AuthenticationError(Exception):
+    """Raised when authentication fails or token is expired"""
+    pass
+
 class TelUServiceDesk:
     BASE_URL = "https://service-satu.telkomuniversity.ac.id/servicedesk"
     
@@ -29,6 +33,14 @@ class TelUServiceDesk:
         response = self.session.request(
             method, url, headers=headers, **kwargs
         )
+        
+        # Check for authentication errors
+        if response.status_code in [401, 403]:
+            raise AuthenticationError(
+                "Authentication failed - your bearer token has expired or is invalid. "
+                "Please run: ./cli.py login"
+            )
+        
         response.raise_for_status()
         return response.json()
     
@@ -58,8 +70,12 @@ class TelUServiceDesk:
                             for ticket in tickets:
                                 ticket['status_name'] = status_name
                             all_tickets.extend(tickets)
-                            
+            
+            except AuthenticationError:
+                # Re-raise authentication errors immediately
+                raise
             except Exception:
+                # Silently skip other errors (e.g., network issues for specific status codes)
                 continue
         
         all_tickets.sort(key=lambda x: x.get('created_at', ''), reverse=True)
