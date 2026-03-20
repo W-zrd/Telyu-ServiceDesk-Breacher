@@ -115,10 +115,12 @@ def ticket(ticket_id, output_format):
         if output_format == 'json':
             click.echo(json.dumps(ticket_data, indent=2))
         elif output_format == 'detail':
+            comments = api.get_ticket_comments(ticket_id)
+            
             if isinstance(ticket_data, dict):
-                click.echo(format_ticket_summary(ticket_data))
+                click.echo(format_ticket_summary(ticket_data, comments))
             elif isinstance(ticket_data, list) and len(ticket_data) > 0:
-                click.echo(format_ticket_summary(ticket_data[0]))
+                click.echo(format_ticket_summary(ticket_data[0], comments))
             else:
                 click.echo(f"{Fore.YELLOW}No ticket data found.{Style.RESET_ALL}")
                 
@@ -169,7 +171,9 @@ def tickets(username, status_name, page, output_format):
                     tickets = data['data']
                     for ticket in tickets:
                         ticket['status_name'] = status_name
-                        click.echo(format_ticket_summary(ticket))
+                        ticket_id = ticket.get('id')
+                        comments = api.get_ticket_comments(ticket_id) if ticket_id else None
+                        click.echo(format_ticket_summary(ticket, comments))
                     click.echo(format_pagination_info(data))
                 else:
                     click.echo(f"{Fore.YELLOW}No tickets found.{Style.RESET_ALL}")
@@ -196,7 +200,9 @@ def tickets(username, status_name, page, output_format):
             elif output_format == 'detail':
                 if tickets:
                     for ticket in tickets:
-                        click.echo(format_ticket_summary(ticket))
+                        ticket_id = ticket.get('id')
+                        comments = api.get_ticket_comments(ticket_id) if ticket_id else None
+                        click.echo(format_ticket_summary(ticket, comments))
                     click.echo(f"\n{Fore.CYAN}Total: {len(tickets)} tickets across all statuses{Style.RESET_ALL}")
                 else:
                     click.echo(f"{Fore.YELLOW}No tickets found.{Style.RESET_ALL}")

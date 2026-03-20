@@ -104,6 +104,14 @@ class TelUServiceDesk:
         
         raise ValueError(f"Could not retrieve ticket #{ticket_id} for user {username}")
     
+    def get_ticket_comments(self, ticket_id):
+        url = f"{self.BASE_URL}/84bb4e380f70e9a912fb06fe686593f2/{ticket_id}/1/0/0/0"
+        try:
+            data = self._request('GET', url)
+            return data if data else []
+        except Exception:
+            return []
+    
     def create_ticket(self, username, description, user_id=None, service_detail_id=1213):
         url = f"{self.BASE_URL}/67fe01881afdcb8956f2dbf67b4b7596"
         if not description.strip().startswith('<p>'):

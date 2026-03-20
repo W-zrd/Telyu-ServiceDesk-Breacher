@@ -1,6 +1,6 @@
 from colorama import Fore, Style
 
-def format_ticket_summary(ticket):
+def format_ticket_summary(ticket, comments=None):
     lines = []
     
     lines.append(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
@@ -76,6 +76,31 @@ def format_ticket_summary(ticket):
         usernames = [a.get('username_assignee') or 'N/A' for a in assignees]
         lines.append(f"  {', '.join(usernames)}")
     
+    if comments:
+        if isinstance(comments, dict) and 'data' in comments:
+            comments_list = comments['data']
+        elif isinstance(comments, list):
+            comments_list = comments
+        else:
+            comments_list = []
+        
+        if comments_list:
+            lines.append(f"\n{Fore.GREEN}💬 Comments ({len(comments_list)}):{Style.RESET_ALL}")
+            for i, comment in enumerate(comments_list, 1):
+                username = comment.get('username') or comment.get('created_by') or 'Unknown'
+                created_at = comment.get('created_at') or 'N/A'
+                comment_text = comment.get('messages') or comment.get('message') or comment.get('comment') or comment.get('description') or ''
+                attachment_url = comment.get('url') or ''
+                
+                if comment_text:
+                    comment_text = str(comment_text).replace('<p>', '').replace('</p>', '\n     ').replace('<br>', '\n     ').replace('\r\n', '\n     ').strip()
+                
+                lines.append(f"  {i}. {Fore.CYAN}{username}{Style.RESET_ALL} - {created_at}")
+                if comment_text:
+                    lines.append(f"     {comment_text}")
+                if attachment_url:
+                    lines.append(f"     📎 {attachment_url}")
+    
     return '\n'.join(lines)
 
 def format_ticket_list(tickets):
@@ -104,6 +129,8 @@ def format_ticket_list(tickets):
         desc = ticket.get('description_user') or ''
         if desc:
             desc = str(desc).replace('<p>', '').replace('</p>', '').replace('<br>', ' ').replace('\r\n', ' ')
+            if len(desc) > 100:
+                desc = desc[:100] + '...'
         else:
             desc = 'N/A'
         
