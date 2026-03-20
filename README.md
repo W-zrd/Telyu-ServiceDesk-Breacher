@@ -84,7 +84,7 @@ You can also try the manual version assuming that you already have the Bearer To
 ./cli.py login --manual
 ```
 
-### 2. View All Tickets belonging to Other User
+### 2. View All Tickets belonging to Other Users
 
 ![](/img/overview.png)
 
@@ -103,7 +103,19 @@ Replace `sso_username` to your target victim username. Or if you want more detai
 - Sorts by creation time (newest first)
 - Shows status label for each ticket
 
-#### 2.1. Filter by Specific Status
+#### 2.2. View ticket detail based on Ticket ID
+
+Get detailed information for a specific ticket assuming if u know the ticket ID.
+
+```bash
+./cli.py ticket --id {ticket_id}
+```
+
+```bash
+./cli.py ticket --id {ticket_id} --format detail
+```
+
+#### 2.3. Filter by Specific Status
 
 If you only want tickets with a specific status:
 

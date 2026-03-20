@@ -2,7 +2,6 @@ import requests
 from .auth import TelUAuth
 
 class AuthenticationError(Exception):
-    """Raised when authentication fails or token is expired"""
     pass
 
 class TelUServiceDesk:
@@ -78,6 +77,32 @@ class TelUServiceDesk:
         all_tickets.sort(key=lambda x: x.get('created_at', ''), reverse=True)
         
         return all_tickets
+    
+    def get_ticket_owner(self, ticket_id):
+        url = f"{self.BASE_URL}/e5161778a026afc58c32ecaac665080d/{ticket_id}"
+        data = self._request('GET', url)
+        
+        if isinstance(data, list):
+            for entry in data:
+                if entry.get('type_id') == 1:
+                    return entry.get('created_by')
+        
+        raise ValueError(f"Could not find owner for ticket #{ticket_id}")
+    
+    def get_ticket_detail(self, ticket_id):
+        username = self.get_ticket_owner(ticket_id)
+        
+        for status_code in [1, 2, 3, 4, 5, 6]:
+            try:
+                url = f"{self.BASE_URL}/f2e3d7e81dc9acf98d615ac257af7805/{username}/{status_code}/1/{ticket_id}/0/0/0/0/0/0/0/0/"
+                data = self._request('GET', url)
+                
+                if 'data' in data and data['data']:
+                    return data['data']
+            except Exception:
+                continue
+        
+        raise ValueError(f"Could not retrieve ticket #{ticket_id} for user {username}")
     
     def create_ticket(self, username, description, user_id=None, service_detail_id=1213):
         url = f"{self.BASE_URL}/67fe01881afdcb8956f2dbf67b4b7596"
