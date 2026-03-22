@@ -142,3 +142,42 @@ class TelUServiceDesk:
         
         response.raise_for_status()
         return response.json()
+    
+    def send_comment(self, ticket_id, message, sender, receiver):
+        """
+        Send a comment/reply to a ticket.
+        
+        Args:
+            ticket_id: The ticket ID to comment on
+            message: The comment/reply message
+            sender: Username of the sender (will also be used as created_by)
+            receiver: Username of the receiver
+        
+        Returns:
+            API response JSON
+        """
+        url = "https://gateway.telkomuniversity.ac.id/3a73c080996ff8af6b7cd7972cbf983a"
+        
+        data = {
+            'id_tickets': str(ticket_id),
+            'messages': message,
+            'type_messages': '1',  # Constant value
+            'sender': sender,
+            'receiver': receiver,
+            'created_by': sender  # Same as sender
+        }
+        
+        response = self.session.post(
+            url,
+            headers=self.auth.get_headers(),
+            data=data
+        )
+        
+        if response.status_code in [401, 403]:
+            raise AuthenticationError(
+                "Authentication failed - your bearer token has expired or is invalid. "
+                "Please run: ./cli.py login"
+            )
+        
+        response.raise_for_status()
+        return response.json()

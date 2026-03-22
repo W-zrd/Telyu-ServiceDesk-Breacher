@@ -214,11 +214,8 @@ def tickets(username, status_name, page, output_format):
             click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
 
 @cli.command()
-@click.option('--username', prompt='Target username', help='Username to create ticket as (e.g., king.wzrd)')
-@click.option('--user-id', default=None, help='User ID (optional, e.g., 1302210127)')
-@click.option('--description', prompt='Ticket description', help='Description of the issue/request')
-@click.option('--service-id', default=1213, help='Service detail ID (default: 1213)')
-def create_ticket(username, user_id, description, service_id):
+def create_ticket():
+    """Create a new ticket as a specified user (admin operation)."""
     auth = TelUAuth()
     if not auth.is_authenticated():
         click.echo(f"{Fore.RED}✗ Not authenticated. Run: ./cli.py login{Style.RESET_ALL}")
@@ -226,11 +223,17 @@ def create_ticket(username, user_id, description, service_id):
     
     api = TelUServiceDesk(auth)
     
+    # Interactive prompts - no options, pure interactive mode
+    username = click.prompt('Target username', type=str)
+    description = click.prompt('Ticket description', type=str)
+    
+    # User ID is optional (blank/None), Service Detail ID is constant 1213
+    user_id = None
+    service_id = 1213
+    
     click.echo()
     click.echo(f"{Fore.CYAN}📝 Ticket Preview:{Style.RESET_ALL}")
     click.echo(f"  {Fore.GREEN}Username:{Style.RESET_ALL} {username}")
-    if user_id:
-        click.echo(f"  {Fore.GREEN}User ID:{Style.RESET_ALL} {user_id}")
     click.echo(f"  {Fore.GREEN}Service ID:{Style.RESET_ALL} {service_id}")
     click.echo(f"  {Fore.GREEN}Description:{Style.RESET_ALL}")
     
@@ -261,6 +264,67 @@ def create_ticket(username, user_id, description, service_id):
         click.echo(f"  {Fore.GREEN}Status:{Style.RESET_ALL} {result.get('status', 'N/A')}")
         click.echo(f"  {Fore.GREEN}Message:{Style.RESET_ALL} {result.get('message', 'N/A')}")
         click.echo()
+        
+    except AuthenticationError as e:
+        click.echo(f"{Fore.RED}✗ {e}{Style.RESET_ALL}")
+        raise click.Abort()
+    except Exception as e:
+        click.echo(f"{Fore.RED}✗ Error: {e}{Style.RESET_ALL}")
+        import traceback
+        traceback.print_exc()
+        raise click.Abort()
+
+@cli.command()
+def comment():
+    """Send a comment/reply to a ticket."""
+    auth = TelUAuth()
+    if not auth.is_authenticated():
+        click.echo(f"{Fore.RED}✗ Not authenticated. Run: ./cli.py login{Style.RESET_ALL}")
+        raise click.Abort()
+    
+    api = TelUServiceDesk(auth)
+    
+    # Interactive prompts - no options, pure interactive mode
+    ticket_id = click.prompt('Ticket ID', type=int)
+    message = click.prompt('Comment message', type=str)
+    sender = click.prompt('Sender SSO username (Who will you submit this ticket AS?)', type=str)
+    receiver = click.prompt('Receiver SSO username (Who will you send this ticket TO?)', type=str, default='admin')
+    
+    click.echo()
+    click.echo(f"{Fore.CYAN}💬 Comment Preview:{Style.RESET_ALL}")
+    click.echo(f"  {Fore.GREEN}Ticket ID:{Style.RESET_ALL} #{ticket_id}")
+    click.echo(f"  {Fore.GREEN}From:{Style.RESET_ALL} {sender}")
+    click.echo(f"  {Fore.GREEN}To:{Style.RESET_ALL} {receiver}")
+    click.echo(f"  {Fore.GREEN}Message:{Style.RESET_ALL} {message}")
+    click.echo()
+    
+    if not click.confirm(f"Send this comment?", default=True):
+        click.echo(f"{Fore.YELLOW}✗ Cancelled{Style.RESET_ALL}")
+        return
+    
+    try:
+        click.echo()
+        click.echo(f"{Fore.CYAN}📤 Sending comment...{Style.RESET_ALL}")
+        
+        result = api.send_comment(
+            ticket_id=ticket_id,
+            message=message,
+            sender=sender,
+            receiver=receiver
+        )
+        
+        click.echo()
+        click.echo(f"{Fore.GREEN}✅ Comment sent successfully!{Style.RESET_ALL}")
+        click.echo()
+        
+        if isinstance(result, dict):
+            if 'message' in result:
+                click.echo(f"  {Fore.GREEN}Response:{Style.RESET_ALL} {result['message']}")
+            if 'id' in result:
+                click.echo(f"  {Fore.GREEN}Comment ID:{Style.RESET_ALL} {result['id']}")
+        
+        click.echo()
+        click.echo(f"Run: {Fore.CYAN}./cli.py ticket --id {ticket_id}{Style.RESET_ALL} to view the ticket with comments")
         
     except AuthenticationError as e:
         click.echo(f"{Fore.RED}✗ {e}{Style.RESET_ALL}")

@@ -129,8 +129,6 @@ def format_ticket_list(tickets):
         desc = ticket.get('description_user') or ''
         if desc:
             desc = str(desc).replace('<p>', '').replace('</p>', '').replace('<br>', ' ').replace('\r\n', ' ')
-            if len(desc) > 100:
-                desc = desc[:100] + '...'
         else:
             desc = 'N/A'
         

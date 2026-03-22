@@ -103,6 +103,12 @@ Replace `sso_username` to your target victim username. Or if you want more detai
 - Sorts by creation time (newest first)
 - Shows status label for each ticket
 
+**Available Options:**
+- `--username`: Tel-U SSO username to query (required)
+- `--status`: Ticket status filter (optional, fetches all if omitted)
+- `--page`: Page number (only used with --status)
+- `--format`: Output format (`list`, `detail`, or `json`)
+
 #### 2.2. View ticket detail based on Ticket ID
 
 Get detailed information for a specific ticket assuming if u know the ticket ID.
@@ -120,11 +126,10 @@ Get detailed information for a specific ticket assuming if u know the ticket ID.
 If you only want tickets with a specific status:
 
 ```bash
-./cli.py tickets --username {sso_username} --status {status_name}
+--status {status_name}
 ```
 
 **Available Statuses:**
-
 
 | status_name    | Code | Description              |
 |---------------|------|--------------------------|
@@ -136,42 +141,9 @@ If you only want tickets with a specific status:
 | on-hold       | 6    | On hold ticket           |
 | confirmation  | 8    | Confirmation ticket      |
 
-**Options:**
-- `--username`: Tel-U SSO username to query (required)
-- `--status`: Ticket status filter (optional, fetches all if omitted)
-- `--page`: Page number (only used with --status)
-- `--format`: Output format (`list`, `detail`, or `json`)
-
-**Examples:**
-```bash
-./cli.py tickets --username king.wzrd --status new
-./cli.py tickets --username king.wzrd --status in-progress --page 2
-./cli.py tickets --username king.wzrd --status closed --format detail
-```
-
-**Output Formats:**
-- `list`: Summary view with ticket IDs, status, and short description (default)
-- `detail`: Full ticket details including tasks, assignees, attachments
-- `json`: Raw JSON response
-
 ## 3. Create New Ticket as Another User
 
-The `create-ticket` command allows you to create a new service desk ticket as any specified user.
-
-```bash
-./cli.py create-ticket --username {sso_username} --description "{message}"
-```
-
-- `--username`: Target SSO username. Specify which user the ticket will be created as
-- `--description`: The ticket description/message
-
-Usage Example:
-
-```bash
-./cli.py create-ticket --username victim.user --description "Hi there, im hacker. I use your account to create this ticket."
-```
-
-Or you can use interactive mode:
+The `create-ticket` command allows you to create a new service desk ticket as any specified user. 
 
 ```bash
 ./cli.py create-ticket
@@ -179,111 +151,27 @@ Or you can use interactive mode:
 
 You'll be prompted for Target username and Ticket description
 
-### 3.1 Multi-line Description
+- `username`: Target SSO username. Specify which user the ticket will be created as
+- `description`: The ticket description/message
 
-For longer descriptions, use quotes and newlines:
+## 4. Replying/Commenting to Someone's Ticket
+
+The `comment` command allows you to send a comment or reply to an existing ticket as any specified user based on ticket ID. So the first thing you need to do for using this command is to find the ticket ID first. You can use `./cli.py tickets --username {sso_username}` to do so.
 
 ```bash
-./cli.py create-ticket \
-  --username victim.user \
-  --description "
-Issue: Email access problem
-Details: After resetting password, still cannot login
-Attempted solutions: Cleared browser cache, tried different browsers
-Request: Please reset email account
-"
+./cli.py comment
 ```
 
-## Configuration
-
-### config.json
-
-After successful login, session data is stored in `config.json`:
-```json
-{
-  "access_token": "eyJ0eXAiOiJKV1Q...",
-  "headers": {
-    "Authorization": "Bearer eyJ0eXAiOiJKV1Q..."
-  },
-  "cookies": { ... },
-  "extracted_at": "2026-03-17T07:00:00",
-  "expires_estimate": "2026-03-18T07:00:00"
-}
+**Example:**
+```bash
+./cli.py comment
+# Ticket ID: 24043
+# Comment message: baik, dimengerti
+# Sender SSO username (Who will you submit this ticket AS?): target_username
+# Receiver SSO username (Who will you send this ticket TO?) [default is `admin`]: admin
 ```
 
-**Session expiry:** Tokens typically last 24 hours. Re-run `./cli.py login` when expired.
-
-## Output Examples
-
-### List Format (All Tickets)
-
-```
-================================================================================
-Total: 15 ticket(s)
-================================================================================
-
-#24567     [NEW] New                      High      
-           2026-03-18 14:30:00
-           Request for new VPN access for remote work
-
-#24556     [IN-PROGRESS] In Progress      Medium    
-           2026-03-18 10:15:00
-           Software installation request - Microsoft Office
-
-#24340     [CLOSED] Close                 Medium    
-           2025-11-04 23:05:47
-           Dear IT Service Desk PuTI, saya memerlukan bantuan untuk reset password SSO...
-
-Total: 15 tickets across all statuses
-```
-
-### Detail Format
-```
-================================================================================
-Ticket #24340
-================================================================================
-
-📋 Basic Info:
-  Status       : Close (closed)
-  Priority     : Medium
-  Classification: Minor
-  Purpose      : Information
-  Service      : Informasi → Informasi
-
-👤 User Info:
-  Name         : VICTIM USER
-  Username     : victim_user
-  Tel-U ID     : 1302210127
-  Email        : victim_user@student.telkomuniversity.ac.id
-  Position     : STUDENT
-
-📅 Dates:
-  Created      : 2025-11-04 23:05:47
-  Updated      : 2026-03-17 19:41:31
-  Closed       : 2025-11-19 11:11:37
-  SLA          : 72 hours
-
-📝 Description:
-  Dear IT Service Desk PuTI, saya memerlukan bantuan untuk reset password SSO ..
-
-📎 Attachment:
-  https://fileserver.telkomuniversity.ac.id/...
-
-⭐ Rating:
-  Score        : 1/5
-  Feedback     : overall good, but would be better...
-
-📋 Tasks (3):
-  1. Permintaan reset password SSO oleh username victim_user..
-     Created: 2025-11-05 08:33:16 by admin_puti1
-     Assignees: 2 (2 done)
-
-🏷️  Keywords:
-  reset password sso
-
-👥 Assignees:
-  admin_puti1, admin_puti2, admin_puti3
-```
+Typically, you'd send the comment AS your target victim (*or yourself*) -> TO the `admin`. But if you want to do the opposite (from admin to target_victim), you need to specify the admin username.
 
 ## Project Structure
 
