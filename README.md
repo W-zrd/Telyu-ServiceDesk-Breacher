@@ -143,6 +143,8 @@ If you only want tickets with a specific status:
 
 ## 3. Create New Ticket as Another User
 
+![](/img/create-ticket.png)
+
 The `create-ticket` command allows you to create a new service desk ticket as any specified user. 
 
 ```bash
@@ -153,6 +155,8 @@ You'll be prompted for Target username and Ticket description
 
 - `username`: Target SSO username. Specify which user the ticket will be created as
 - `description`: The ticket description/message
+
+You can confirm if the ticket was created successfully by running `./cli.py --username {target_username}`
 
 ## 4. Replying/Commenting to Someone's Ticket
 
@@ -172,6 +176,14 @@ The `comment` command allows you to send a comment or reply to an existing ticke
 ```
 
 Typically, you'd send the comment AS your target victim (*or yourself*) -> TO the `admin`. But if you want to do the opposite (from admin to target_victim), you need to specify the admin username.
+
+Sample case for testing: Create a ticket using my own account in Service Desk:
+
+![](/img/comment-1.png)
+
+Reply that ticket as an admin:
+
+![](/img/comment-2.png)
 
 ## Project Structure
 
