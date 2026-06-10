@@ -1,8 +1,10 @@
 # Tel-U Service Desk Breacher
 
+**This project is no longer maintained since the finding was closed.**
+
 If you ever tired of being student, feeling burnout, lack of motivations, or depressed during study, wouldn't it be better if you take a revenge to have some fun? or shall we make PuTI a little bit busy tonight?
 
-![](/img/cover.jpeg)
+![](/img/create-ticket.png)
 
 **The Context:**
 There are several active bugs found on [PuTI Service Desk](https://it-servicedesk.telkomuniversity.ac.id/home) service and this tool was developed by exploiting Broken Access Control, Parameter Tampering, and Insecure Direct Object References on that site. If the bug fixed, this repo would be archived.
